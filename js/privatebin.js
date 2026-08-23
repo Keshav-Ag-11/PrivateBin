@@ -1156,14 +1156,39 @@ window.PrivateBin = (function () {
         async function deriveKey(key, password, spec) {
             // combine URL key + optional password, same as before
             const secret = key + (password && password.length > 0 ? password : '');
+            const usesArgon2id = spec[8] === 'argon2id'; // absent on pastes created before this change
 
-            // Argon2id: memory-hard key stretching (replaces PBKDF2)
+            if (!usesArgon2id) {
+                // LEGACY PATH: old pastes were encrypted with PBKDF2, keep decrypting them the same way
+                const importedKey = await window.crypto.subtle.importKey(
+                    'raw',
+                    stringToArraybuffer(secret),
+                    { name: 'PBKDF2' },
+                    false,
+                    ['deriveKey']
+                ).catch(Alert.showError);
+
+                return window.crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: stringToArraybuffer(spec[1]),
+                        iterations: spec[2],
+                        hash: { name: 'SHA-256' }
+                    },
+                    importedKey,
+                    { name: 'AES-' + spec[6].toUpperCase(), length: spec[3] },
+                    false,
+                    ['encrypt', 'decrypt']
+                ).catch(Alert.showError);
+            }
+
+            // NEW PATH: Argon2id, memory-hard key stretching (stronger than PBKDF2)
             const derivedKey = await hashwasm.argon2id({
                 password: secret,
                 salt: stringToArraybuffer(spec[1]), // reuse PrivateBin's existing salt
                 parallelism: 1,
-                iterations: 3,          // tune for speed vs. strength
-                memorySize: 19456,      // 19 MB, RFC 9106 low-memory profile
+                iterations: 3,          // tuned for browser performance, inspired by RFC 9106
+                memorySize: 19456,      // 19 MB
                 hashLength: spec[3] / 8, // e.g. 256-bit key = 32 bytes
                 outputType: 'binary'    // returns raw bytes directly (not wrapped in an object)
             }).catch(Alert.showError);
@@ -1178,6 +1203,7 @@ window.PrivateBin = (function () {
                 },
                 false,
                 ['encrypt', 'decrypt']
+
             ).catch(Alert.showError);
         }
 
@@ -1224,12 +1250,13 @@ window.PrivateBin = (function () {
                 spec = [
                     getRandomBytes(16), // initialization vector
                     getRandomBytes(8),  // salt
-                    100000,             // iterations
+                    100000,             // iterations (legacy PBKDF2 value, unused by argon2id pastes)
                     256,                // key size
                     128,                // tag size
                     'aes',              // algorithm
                     'gcm',              // algorithm mode
-                    compression         // compression
+                    compression,        // compression
+                    'argon2id'          // KDF marker: new pastes use Argon2id, older pastes have no 9th element and fall back to PBKDF2
                 ], encodedSpec = [];
             for (let i = 0; i < spec.length; ++i) {
                 encodedSpec[i] = i < 2 ? btoa(spec[i]) : spec[i];
