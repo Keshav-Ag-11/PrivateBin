@@ -1,62 +1,367 @@
 /**
- * PrivateBin
- *
- * Cascading style sheets for bootstrap 5 template.
- *
- * @link      https://github.com/PrivateBin/PrivateBin
- * @copyright 2012 Sébastien SAUVAGE (sebsauvage.net)
- * @license   https://www.opensource.org/licenses/zlib-license.php The zlib/libpng License
+ * PrivateBin Lovable-Inspired High-Fidelity Theme (Uniform, Spacing & Padding Fixed)
  */
 
 @import url("../common.css");
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --sd-bg: #07111a;
+  --sd-surface: #0c1b29;
+  --sd-card-bg: #0e2233;
+  --sd-border: rgba(56, 189, 248, 0.15);
+  --sd-cyan: #38bdf8;
+  --sd-teal: #2dd4bf;
+  --sd-emerald: #10b981;
+  --sd-amber: #f59e0b;
+  --sd-text-main: #f1f5f9;
+  --sd-text-muted: #94a3b8;
+  --sd-glow: 0 0 25px rgba(56, 189, 248, 0.25);
+  --sd-gradient-cta: linear-gradient(90deg, #38bdf8, #2dd4bf);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  background-color: var(--sd-bg) !important;
+  color: var(--sd-text-main) !important;
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(45, 212, 191, 0.08) 0%, transparent 50%) !important;
+  background-attachment: fixed !important;
+  min-height: 100vh !important;
+}
 
 .hidden {
-	display: none !important;
+  display: none !important;
 }
 
-.opacity-05-1-hover {
-	opacity: 0.5;
-	transition: all 0.15s ease;
+.max-width-1200 {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
 }
 
-.opacity-05-1-hover:hover {
-	opacity: 1;
+/* Navbar */
+.navbar {
+  background: rgba(7, 17, 26, 0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid var(--sd-border) !important;
+  padding: 16px 28px !important;
 }
 
-.dropdown-menu {
-	--bs-dropdown-min-width: 23rem;
+.navbar-brand {
+  font-weight: 800 !important;
+  font-size: 1.25rem !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
 }
 
-pre {
-	margin-bottom: 0;
+.brand-icon-shield {
+  width: 38px;
+  height: 38px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid var(--sd-cyan);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sd-cyan);
+  box-shadow: var(--sd-glow);
 }
 
-[data-bs-theme=light] pre, [data-bs-theme=light] .card {
-	background-color: RGBA(var(--bs-light-rgb), var(--bs-bg-opacity, 1));
+/* Hero Section */
+.hero-section {
+  padding: 32px 0 16px 0;
 }
 
-li.L0, li.L1, li.L2, li.L3, li.L4, li.L5, li.L6, li.L7, li.L8, li.L9 {
-	color: revert !important;
-	list-style-type: decimal !important;
+.inline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(12, 27, 41, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--sd-cyan);
+  text-transform: uppercase;
 }
 
-[data-bs-theme=dark] li.L1, [data-bs-theme=dark] li.L3, [data-bs-theme=dark] li.L5,
-[data-bs-theme=dark] li.L7, [data-bs-theme=dark] li.L9 {
-	background-color: var(--bs-gray-dark) !important;
+.dot-green {
+  width: 8px;
+  height: 8px;
+  background-color: var(--sd-emerald);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--sd-emerald);
 }
 
-.text-right button {
-	float: right;
+.hero-title {
+  font-size: 3.25rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -1px !important;
+  color: #ffffff !important;
 }
 
-html[dir="rtl"] #deletelink, html[dir="rtl"] #qrcodemodalClose {
-	float: left;
+.gradient-text {
+  background: linear-gradient(90deg, #38bdf8, #2dd4bf, #a7f3d0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1.05rem;
+  color: var(--sd-text-muted);
+  max-width: 650px;
+  line-height: 1.6;
+}
+
+/* Zero Knowledge Pipeline Component */
+.pipeline-container {
+  background: var(--sd-card-bg);
+  border: 1px solid var(--sd-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.pipeline-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--sd-text-muted);
+}
+
+.pulse-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--sd-emerald);
+  font-weight: 600;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--sd-emerald);
+  border-radius: 50%;
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.pipe-card {
+  background: rgba(12, 27, 41, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 20px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.pipe-card.active {
+  border-color: var(--sd-cyan);
+  background: rgba(56, 189, 248, 0.08);
+  box-shadow: var(--sd-glow);
+}
+
+.pipe-icon {
+  width: 42px;
+  height: 42px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sd-cyan);
+  margin-bottom: 12px;
+}
+
+.pipe-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.pipe-desc {
+  font-size: 0.8rem;
+  color: var(--sd-text-muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.pipe-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem;
+  color: var(--sd-cyan);
+}
+
+/* Decrypted View Container Spacing & Padding */
+#prettymessage, #plaintext {
+  background: var(--sd-card-bg) !important;
+  border: 1px solid var(--sd-border) !important;
+  border-radius: 20px !important;
+  padding: 28px 36px !important;
+  margin-top: 20px !important;
+  margin-bottom: 32px !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4) !important;
 }
 
 #prettyprint {
-	padding-right: 30px;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #f8fafc !important;
+  font-family: 'Fira Code', monospace !important;
+  font-size: 0.975rem !important;
+  line-height: 1.7 !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
 }
 
-#sendbutton svg {
-	transform: translateY(1.5px);
+#plaintext {
+  color: #f8fafc !important;
+  font-family: 'Fira Code', monospace !important;
+  font-size: 0.975rem !important;
+  line-height: 1.7 !important;
+}
+
+/* Post Creation Success Card Spacing */
+#pastesuccess {
+  background: var(--sd-card-bg) !important;
+  border: 1px solid var(--sd-border) !important;
+  border-radius: 20px !important;
+  padding: 28px 36px !important;
+  margin-bottom: 32px !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Alerts & Status Notification Spacing */
+.alert {
+  padding: 16px 24px !important;
+  border-radius: 14px !important;
+  margin-bottom: 24px !important;
+  font-size: 0.925rem !important;
+}
+
+/* Editor & Cards */
+.sd-card {
+  background: var(--sd-card-bg) !important;
+  border: 1px solid var(--sd-border) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+}
+
+textarea#message, textarea#decoytextinput {
+  font-family: 'Fira Code', monospace !important;
+  background: rgba(7, 17, 26, 0.85) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(56, 189, 248, 0.2) !important;
+  border-radius: 14px !important;
+  padding: 20px !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+  resize: vertical;
+}
+
+textarea#message:focus, textarea#decoytextinput:focus {
+  border-color: var(--sd-cyan) !important;
+  box-shadow: var(--sd-glow) !important;
+  outline: none !important;
+}
+
+/* Form Controls & Inputs */
+.form-control, .form-select {
+  background-color: rgba(7, 17, 26, 0.9) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-size: 0.9rem !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--sd-cyan) !important;
+  box-shadow: var(--sd-glow) !important;
+  color: #ffffff !important;
+}
+
+/* Expiration Pill Selector */
+.expire-pill-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.btn-expire-pill {
+  background: rgba(12, 27, 41, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--sd-text-muted);
+  font-size: 0.825rem;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 10px 0;
+  transition: all 0.2s ease;
+}
+
+.btn-expire-pill:hover, .btn-expire-pill.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--sd-cyan);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+/* CTA Button */
+.btn-encrypt-cta {
+  background: var(--sd-gradient-cta) !important;
+  border: none !important;
+  color: #07111a !important;
+  font-weight: 800 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0.5px !important;
+  border-radius: 14px !important;
+  padding: 16px 28px !important;
+  box-shadow: 0 6px 25px rgba(56, 189, 248, 0.4) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  width: 100%;
+}
+
+.btn-encrypt-cta:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 35px rgba(56, 189, 248, 0.6) !important;
+}
+
+/* Security Verification Grid */
+.sec-card {
+  background: rgba(14, 34, 51, 0.6);
+  border: 1px solid var(--sd-border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.badge-verified {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 1px;
 }

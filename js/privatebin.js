@@ -2014,7 +2014,7 @@ window.PrivateBin = (function () {
 
             // function guard
             if (!element) {
-                throw new TypeError(`invalid/no element (${element}) given for alert type ${alertType[id]} with ID ${id}`);
+                element = document.createElement('div');
             }
 
             // pass to custom handler if defined
@@ -2156,7 +2156,7 @@ window.PrivateBin = (function () {
          * @function
          */
         me.hideLoading = function () {
-            loadingIndicator.classList.add('hidden');
+            if (loadingIndicator) loadingIndicator.classList.add('hidden');
 
             // hide loading cursor
             document.body.classList.remove('loading');
@@ -2806,9 +2806,15 @@ window.PrivateBin = (function () {
          * @function
          */
         me.show = function () {
-            message.classList.remove('hidden');
-            messageTabParent.classList.remove('hidden');
-            editorTabs.classList.remove('hidden');
+            if (message) message.classList.remove('hidden');
+            if (messageTabParent) messageTabParent.classList.remove('hidden');
+            if (editorTabs) editorTabs.classList.remove('hidden');
+            const editorSection = document.getElementById('editor-section');
+            if (editorSection) editorSection.classList.remove('hidden');
+            const heroSection = document.querySelector('.hero-section');
+            if (heroSection) heroSection.classList.remove('hidden');
+            const pipeContainer = document.querySelector('.pipeline-container');
+            if (pipeContainer) pipeContainer.classList.remove('hidden');
         };
 
         /**
@@ -2818,9 +2824,11 @@ window.PrivateBin = (function () {
          * @function
          */
         me.hide = function () {
-            message.classList.add('hidden');
-            messageTabParent.classList.add('hidden');
-            editorTabs.classList.add('hidden');
+            if (message) message.classList.add('hidden');
+            if (messageTabParent) messageTabParent.classList.add('hidden');
+            if (editorTabs) editorTabs.classList.add('hidden');
+            const editorSection = document.getElementById('editor-section');
+            if (editorSection) editorSection.classList.add('hidden');
         };
 
         /**
@@ -2982,6 +2990,14 @@ window.PrivateBin = (function () {
          * @function
          */
         function showPaste() {
+            // Hide creation components when viewing a paste
+            const editorSection = document.getElementById('editor-section');
+            if (editorSection) editorSection.classList.add('hidden');
+            const heroSection = document.querySelector('.hero-section');
+            if (heroSection) heroSection.classList.add('hidden');
+            const pipeContainer = document.querySelector('.pipeline-container');
+            if (pipeContainer) pipeContainer.classList.add('hidden');
+
             // instead of "nothing" better display a placeholder
             if (text === '') {
                 if (placeholder) placeholder.classList.remove('hidden');
@@ -6360,7 +6376,7 @@ const recipientPrivKeyB64 = btoa(
          * @function
          */
         me.showKeyboardShortcutHint = function () {
-            shortcutHint.classList.remove('hidden');
+            if (shortcutHint) shortcutHint.classList.remove('hidden');
         };
 
         /**
@@ -6370,7 +6386,7 @@ const recipientPrivKeyB64 = btoa(
          * @function
          */
         me.hideKeyboardShortcutHint = function () {
-            shortcutHint.classList.add('hidden');
+            if (shortcutHint) shortcutHint.classList.add('hidden');
         };
 
         /**
@@ -6719,6 +6735,25 @@ const recipientPrivKeyB64 = btoa(
             UiHelper.init();
             CopyToClipboard.init();
             PasswordPeek.init();
+
+            // Initialize Decoy Password UI listeners
+            const toggleDecoyBtn = document.getElementById('toggledecoy');
+            const decoySection = document.getElementById('decoysection');
+            const closeDecoyBtn = document.getElementById('closedecoysection');
+            const decoyBadge = document.getElementById('decoymodebadge');
+
+            if (toggleDecoyBtn && decoySection) {
+                toggleDecoyBtn.addEventListener('click', function() {
+                    decoySection.classList.toggle('hidden');
+                    if (decoyBadge) decoyBadge.classList.toggle('hidden');
+                });
+            }
+            if (closeDecoyBtn && decoySection) {
+                closeDecoyBtn.addEventListener('click', function() {
+                    decoySection.classList.add('hidden');
+                    if (decoyBadge) decoyBadge.classList.add('hidden');
+                });
+            }
 
             // check for legacy browsers before going any further
             if (!Legacy.Check.getInit()) {
