@@ -3,3 +3,11 @@
 !/data/salt.php
 !/data/purge_limiter.php
 !/data/traffic_limiter.php
+
+# Node.js dependencies - never commit these
+js/node_modules/
+node_modules/
+
+# npm/build artifacts
+npm-debug.log*
+mocha-results.xml
