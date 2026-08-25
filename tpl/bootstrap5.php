@@ -92,19 +92,22 @@ endif;
 		</div>
 
 		<!-- Hidden elements required for PrivateBin JS Engine compatibility -->
-		<div class="hidden">
-			<div id="loadingindicator"><span class="spinner-border spinner-border-sm"></span> <span>Loading...</span></div>
-			<div id="noscript"></div>
-			<ul id="editorTabs"><li role="presentation"><a id="messageedit" href="#">Editor</a></li><li role="presentation"><a id="messagepreview" href="#">Preview</a></li></ul>
-			<input id="messagetab" type="checkbox" checked="checked" />
-			<div id="filewrap"><input type="file" id="file" name="file" /></div>
-			<div id="opendiscussionoption"><input id="opendiscussion" type="checkbox" /></div>
-			<div id="expiration"></div>
-			<div id="formatter"></div>
-			<div id="customattachment"></div>
-			<a href="#" id="fileremovebutton"></a>
-			<div id="copyShortcutHint"><span id="copyShortcutHintText"></span><button type="button" id="copyShortcutHintBtn"></button></div>
-		</div>
+		<!-- Each element is wrapped individually so JS .parentElement calls don't unhide the entire block -->
+		<div id="loadingindicator" class="hidden"><span class="spinner-border spinner-border-sm"></span> <span>Loading...</span></div>
+		<div id="noscript" class="hidden"></div>
+		<div class="hidden"><ul id="editorTabs"><li role="presentation"><a id="messageedit" href="#">Editor</a></li><li role="presentation"><a id="messagepreview" href="#">Preview</a></li></ul></div>
+		<div class="hidden"><input id="messagetab" type="checkbox" checked="checked" /></div>
+		<div id="filewrap" class="hidden"><input type="file" id="file" name="file" /></div>
+		<div id="opendiscussionoption" class="hidden"><input id="opendiscussion" type="checkbox" /></div>
+		<div id="expiration" class="hidden"></div>
+		<div id="formatter" class="hidden"></div>
+		<div id="customattachment" class="hidden"></div>
+		<a href="#" id="fileremovebutton" class="hidden"></a>
+		<div id="copyShortcutHint" class="hidden"><span id="copyShortcutHintText"></span><button type="button" id="copyShortcutHintBtn"></button></div>
+		<!-- Dark mode toggle (required by dark-mode-switch.js) -->
+		<input type="checkbox" id="bd-theme" class="hidden" />
+		<!-- Discussion elements (required by DiscussionViewer.init) -->
+		<div id="discussion" class="hidden"><div id="commentcontainer"></div></div>
 
 		<!-- Top Navbar (PrivateBin Branding) -->
 		<nav class="navbar navbar-expand-lg mb-3">
@@ -174,7 +177,7 @@ endif;
 									<div class="pipe-title">Plaintext</div>
 									<div class="pipe-desc">Your note or file, in your browser tab</div>
 								</div>
-								<div class="pipe-tag" id="pipe-file-name">secure-data.txt</div>
+
 							</div>
 						</div>
 						<!-- Stage 2: Browser Encryption -->
@@ -187,12 +190,12 @@ endif;
 									<div class="pipe-title">Browser Encryption</div>
 									<div class="pipe-desc">AES-256-GCM + Argon2id (19 MB), key never leaves tab</div>
 								</div>
-								<div class="pipe-tag" id="pipe-kdf-tag">Argon2id (t=3, m=19MB)</div>
+
 							</div>
 						</div>
 						<!-- Stage 3: Encrypted Storage -->
 						<div class="col-md-3">
-							<div class="pipe-card">
+							<div class="pipe-card active">
 								<div>
 									<div class="pipe-icon">
 										<svg width="20" height="20" fill="currentColor"><use href="img/bootstrap-icons.svg#cloud-download" /></svg>
@@ -200,12 +203,12 @@ endif;
 									<div class="pipe-title">Encrypted Storage</div>
 									<div class="pipe-desc">We only ever hold zero-knowledge ciphertext</div>
 								</div>
-								<div class="pipe-tag" id="pipe-hash-tag">9f2a...c41d</div>
+
 							</div>
 						</div>
 						<!-- Stage 4: Secure Decryption -->
 						<div class="col-md-3">
-							<div class="pipe-card">
+							<div class="pipe-card active">
 								<div>
 									<div class="pipe-icon">
 										<svg width="20" height="20" fill="currentColor"><use href="img/bootstrap-icons.svg#eye" /></svg>
@@ -213,7 +216,7 @@ endif;
 									<div class="pipe-title">Secure Decryption</div>
 									<div class="pipe-desc">Unlocked with fragment key or recipient envelope</div>
 								</div>
-								<div class="pipe-tag text-emerald">Client-side only</div>
+
 							</div>
 						</div>
 					</div>

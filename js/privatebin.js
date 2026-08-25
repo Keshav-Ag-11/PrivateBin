@@ -1909,7 +1909,8 @@ window.PrivateBin = (function () {
          */
         function historyChange(event) {
             let currentLocation = Helper.baseUri();
-            if (event.originalEvent.state === null && // no state object passed
+            const state = (event && event.state !== undefined) ? event.state : (event && event.originalEvent ? event.originalEvent.state : null);
+            if (state === null && // no state object passed
                 event.target.location.href === currentLocation && // target location is home page
                 window.location.href === currentLocation // and we are not already on the home page
             ) {
@@ -3798,20 +3799,22 @@ window.PrivateBin = (function () {
          */
         function initTemplates() {
             reply = Model.getTemplate('reply');
-            replyMessage = reply.querySelector('#replymessage');
-            replyNickname = reply.querySelector('#nickname');
-            replyStatus = reply.querySelector('#replystatus');
+            if (reply) {
+                replyMessage = reply.querySelector('#replymessage');
+                replyNickname = reply.querySelector('#nickname');
+                replyStatus = reply.querySelector('#replystatus');
+
+                const replyButton = reply.querySelector('#replybutton');
+                if (replyButton) {
+                    replyButton.addEventListener('click', PasteEncrypter.sendComment);
+                }
+            }
 
             // cache elements
             commentTail = Model.getTemplate('commenttail');
 
-            const replyButton = reply.querySelector('#replybutton');
-            if (replyButton) {
-                replyButton.addEventListener('click', PasteEncrypter.sendComment);
-            }
-
             addEventListeners();
-        }
+        };
 
         /**
          * open the comment entry when clicking the "Reply" button of a comment
@@ -4006,8 +4009,8 @@ window.PrivateBin = (function () {
          * @function
          */
         me.prepareNewDiscussion = function () {
-            commentContainer.innerHTML = '';
-            discussion.classList.add('hidden');
+            if (commentContainer) commentContainer.innerHTML = '';
+            if (discussion) discussion.classList.add('hidden');
 
             // (re-)init templates
             initTemplates();

@@ -35,6 +35,26 @@ body {
   display: none !important;
 }
 
+/* Force-hide JS engine compatibility elements — the custom template has its own UI for these */
+#filewrap,
+#file,
+#messagetab,
+#messageedit,
+#messagepreview,
+#editorTabs,
+#opendiscussionoption,
+#expiration,
+#formatter,
+#customattachment,
+#fileremovebutton,
+#copyShortcutHint,
+#bd-theme,
+#discussion,
+#loadingindicator,
+#noscript {
+  display: none !important;
+}
+
 .max-width-1200 {
   max-width: 1200px !important;
   margin: 0 auto !important;

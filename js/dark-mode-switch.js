@@ -71,12 +71,14 @@
     const toggle = document.getElementById('bd-theme')
     const theme = getStoredPreferredTheme()
     setTheme(theme)
-    toggle.checked = (theme === 'dark')
-    toggle.addEventListener('change', (event) => {
-      const theme = event.currentTarget.checked ? 'dark' : 'light'
-      setStoredTheme(theme)
-      setTheme(theme)
-      event.currentTarget.focus()
-    })
+    if (toggle) {
+      toggle.checked = (theme === 'dark')
+      toggle.addEventListener('change', (event) => {
+        const theme = event.currentTarget.checked ? 'dark' : 'light'
+        setStoredTheme(theme)
+        setTheme(theme)
+        event.currentTarget.focus()
+      })
+    }
   })
 })()
