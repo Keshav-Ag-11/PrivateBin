@@ -1367,7 +1367,7 @@ window.PrivateBin = (function () {
             const coinFlip = (window.crypto.getRandomValues(new Uint8Array(1))[0] & 1) === 0;
 
             const layers = coinFlip ? [layerA, layerB] : [layerB, layerA];
-            return { v: 2, paddedSize: bucket, layers: layers };
+            return JSON.stringify({ v: 2, paddedSize: bucket, layers: layers });
         };
 
         me.encryptSinglePasswordDuressPaste = async function (content, password, masterKey) {
@@ -1421,9 +1421,33 @@ window.PrivateBin = (function () {
          * @return {string} decrypted message, empty if decryption failed
          */
         me.decipher = async function (key, password, data) {
-            if (data && typeof data === 'object' && !Array.isArray(data) && (data.v || data.version) && Array.isArray(data.layers)) {
+            let cipherData = Array.isArray(data) ? data[0] : data;
+
+            // Check if cipherData is a raw or Base64-encoded string representing a duress/decoy JSON blob
+            if (typeof cipherData === 'string') {
+                let jsonStr = cipherData;
+                if (!jsonStr.startsWith('{')) {
+                    try { jsonStr = atob(cipherData); } catch (e) {}
+                }
+                if (jsonStr.startsWith('{') && jsonStr.includes('"layers"')) {
+                    try {
+                        const blobObj = JSON.parse(jsonStr);
+                        if (blobObj && (blobObj.v || blobObj.version) && Array.isArray(blobObj.layers)) {
+                            return await me.decryptDuressBlob(blobObj, password, key);
+                        }
+                    } catch (e) {
+                        // Not a valid duress JSON blob, proceed to standard decipher
+                    }
+                }
+            }
+
+            let blob = data;
+            if (Array.isArray(data) && data[0] && typeof data[0] === 'object' && Array.isArray(data[0].layers)) {
+                blob = data[0];
+            }
+            if (blob && typeof blob === 'object' && !Array.isArray(blob) && (blob.v || blob.version) && Array.isArray(blob.layers)) {
                 try {
-                    return await me.decryptDuressBlob(data, password, key);
+                    return await me.decryptDuressBlob(blob, password, key);
                 } catch (e) {
                     return '';
                 }
@@ -5029,6 +5053,45 @@ window.PrivateBin = (function () {
         };
 
         /**
+         * returns the entered decoy password
+         *
+         * @name   TopNav.getDecoyPassword
+         * @function
+         * @return {string}
+         */
+        me.getDecoyPassword = function () {
+            const decoyPassInput = document.getElementById('decoypasswordinput');
+            return decoyPassInput && decoyPassInput.value ? decoyPassInput.value : '';
+        };
+
+        /**
+         * returns the entered decoy cover story text
+         *
+         * @name   TopNav.getDecoyText
+         * @function
+         * @return {string}
+         */
+        me.getDecoyText = function () {
+            const decoyTextInput = document.getElementById('decoytextinput');
+            return decoyTextInput && decoyTextInput.value ? decoyTextInput.value : '';
+        };
+
+        /**
+         * checks if decoy mode is currently active with filled decoy inputs
+         *
+         * @name   TopNav.isDecoyActive
+         * @function
+         * @return {boolean}
+         */
+        me.isDecoyActive = function () {
+            const decoySection = document.getElementById('decoysection');
+            if (!decoySection || decoySection.classList.contains('hidden')) {
+                return false;
+            }
+            return me.getDecoyPassword().length > 0 && me.getDecoyText().length > 0;
+        };
+
+        /**
          * returns the list of recipients entered in the multi-recipient section
          *
          * Returns an array of objects { name } — one per filled-in recipient row.
@@ -5513,11 +5576,42 @@ window.PrivateBin = (function () {
             if (!data.hasOwnProperty('adata')) {
                 data['adata'] = [];
             }
-            let cipherResult = await CryptTool.cipher(symmetricKey, password, JSON.stringify(cipherMessage), data['adata']);
-            data['v'] = 2;
-            data['ct'] = cipherResult[0];
-            data['adata'] = cipherResult[1];
+            if (TopNav.isDecoyActive()) {
+                let zlib = (await z);
+                const compression = (
+                    typeof zlib === 'undefined' ?
+                        'none' : (document.body.dataset.compression || 'zlib')
+                ),
+                spec = [
+                    CryptTool.getRandomBytes(16),
+                    CryptTool.getRandomBytes(8),
+                    100000, 256, 128, 'aes', 'gcm', compression, 'argon2id'
+                ], encodedSpec = [];
+                for (let i = 0; i < spec.length; ++i) {
+                    encodedSpec[i] = i < 2 ? btoa(spec[i]) : spec[i];
+                }
+                if (data['adata'].length === 0) {
+                    data['adata'] = [encodedSpec];
+                } else if (data['adata'][0] === null) {
+                    data['adata'][0] = encodedSpec;
+                }
 
+                const realText = JSON.stringify(cipherMessage);
+                const realPassword = TopNav.getPassword();
+                const decoyText = JSON.stringify({ 'paste': TopNav.getDecoyText() });
+                const decoyPassword = TopNav.getDecoyPassword();
+
+                const duressBlob = await CryptTool.encryptDuressPaste(
+                    realText, realPassword, decoyText, decoyPassword, symmetricKey
+                );
+                data['v'] = 2;
+                data['ct'] = duressBlob;
+            } else {
+                let cipherResult = await CryptTool.cipher(symmetricKey, password, JSON.stringify(cipherMessage), data['adata']);
+                data['v'] = 2;
+                data['ct'] = cipherResult[0];
+                data['adata'] = cipherResult[1];
+            }
         };
 
         /**
@@ -5809,18 +5903,6 @@ window.PrivateBin = (function () {
     ServerInteraction.setCryptParameters(
         envelopeMode ? '' : TopNav.getPassword()
     );
-            // do not send if there is no data
-            if (plainText.length === 0 && !files) {
-                // revert loading status…
-                Alert.hideLoading();
-                TopNav.showCreateButtons();
-                return;
-            }
-
-            // prepare server interaction
-            ServerInteraction.prepare();
-            // in envelope mode we do NOT use a user-typed password — recipients carry the key
-            ServerInteraction.setCryptParameters(envelopeMode ? '' : TopNav.getPassword());
 
             // set success/fail functions
             ServerInteraction.setSuccess(showCreatedPaste);
