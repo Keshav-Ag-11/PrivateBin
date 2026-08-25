@@ -1479,15 +1479,55 @@ window.PrivateBin = (function () {
                     )
                 );
             } catch (err) {
-                console.error(err);
-                return '';
+                // If the provided password fails, it might be a Decoy paste where the outer envelope
+                // is encrypted with an empty password. Try again with an empty password.
+                if (password !== '') {
+                    try {
+                        plaintext = await window.crypto.subtle.decrypt(
+                            cryptoSettings(adataString, spec),
+                            await deriveKey(key, '', spec),
+                            stringToArraybuffer(
+                                atob(cipherMessage)
+                            )
+                        );
+                    } catch (err2) {
+                        console.error(err2);
+                        return '';
+                    }
+                } else {
+                    console.error(err);
+                    return '';
+                }
             }
+            let resultText;
             try {
-                return await decompress(plaintext, spec[7], zlib);
+                resultText = await decompress(plaintext, spec[7], zlib);
             } catch (err) {
                 Alert.showError(err);
                 return err;
             }
+
+            // If decompressed text is a JSON representation of a Duress/Decoy blob, decrypt the requested layer
+            if (typeof resultText === 'string' && resultText.startsWith('{') && resultText.includes('"layers"')) {
+                let isDuressBlob = false;
+                try {
+                    const blobObj = JSON.parse(resultText);
+                    if (blobObj && (blobObj.v || blobObj.version) && Array.isArray(blobObj.layers)) {
+                        isDuressBlob = true;
+                        const duressResult = await me.decryptDuressBlob(blobObj, password, key);
+                        if (duressResult !== null) {
+                            return duressResult;
+                        }
+                    }
+                } catch (e) {
+                    if (isDuressBlob) {
+                        return ''; // Return empty string so the app prompts for a password
+                    }
+                    // Not a valid JSON or not a duress blob, fall through and return resultText as is
+                }
+            }
+
+            return resultText;
         };
 
         /**
@@ -4531,6 +4571,12 @@ window.PrivateBin = (function () {
                 qrDisplay.innerHTML = '';
                 qrDisplay.appendChild(qrCanvas);
             }
+            // Show the QR code modal if Bootstrap is available
+            const qrModal = document.getElementById('qrcodemodal');
+            if (qrModal && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const bsModal = bootstrap.Modal.getOrCreateInstance(qrModal);
+                bsModal.show();
+            }
         }
 
         /**
@@ -5577,25 +5623,6 @@ window.PrivateBin = (function () {
                 data['adata'] = [];
             }
             if (TopNav.isDecoyActive()) {
-                let zlib = (await z);
-                const compression = (
-                    typeof zlib === 'undefined' ?
-                        'none' : (document.body.dataset.compression || 'zlib')
-                ),
-                spec = [
-                    CryptTool.getRandomBytes(16),
-                    CryptTool.getRandomBytes(8),
-                    100000, 256, 128, 'aes', 'gcm', compression, 'argon2id'
-                ], encodedSpec = [];
-                for (let i = 0; i < spec.length; ++i) {
-                    encodedSpec[i] = i < 2 ? btoa(spec[i]) : spec[i];
-                }
-                if (data['adata'].length === 0) {
-                    data['adata'] = [encodedSpec];
-                } else if (data['adata'][0] === null) {
-                    data['adata'][0] = encodedSpec;
-                }
-
                 const realText = JSON.stringify(cipherMessage);
                 const realPassword = TopNav.getPassword();
                 const decoyText = JSON.stringify({ 'paste': TopNav.getDecoyText() });
@@ -5604,8 +5631,13 @@ window.PrivateBin = (function () {
                 const duressBlob = await CryptTool.encryptDuressPaste(
                     realText, realPassword, decoyText, decoyPassword, symmetricKey
                 );
+
+                // Encrypt the duressBlob string through standard CryptTool.cipher
+                // to produce high-entropy AES-GCM ciphertext that passes server validation
+                let cipherResult = await CryptTool.cipher(symmetricKey, '', duressBlob, data['adata']);
                 data['v'] = 2;
-                data['ct'] = duressBlob;
+                data['ct'] = cipherResult[0];
+                data['adata'] = cipherResult[1];
             } else {
                 let cipherResult = await CryptTool.cipher(symmetricKey, password, JSON.stringify(cipherMessage), data['adata']);
                 data['v'] = 2;
@@ -6821,22 +6853,46 @@ const recipientPrivKeyB64 = btoa(
             CopyToClipboard.init();
             PasswordPeek.init();
 
-            // Initialize Decoy Password UI listeners
-            const toggleDecoyBtn = document.getElementById('toggledecoy');
-            const decoySection = document.getElementById('decoysection');
-            const closeDecoyBtn = document.getElementById('closedecoysection');
-            const decoyBadge = document.getElementById('decoymodebadge');
+            // Protection Mode Toggle Listeners (Standard, Decoy, Envelopes)
+            const btnStandard = document.getElementById('btn-mode-standard');
+            const btnDecoy = document.getElementById('toggledecoy');
+            const btnRecipients = document.getElementById('togglerecipients');
 
-            if (toggleDecoyBtn && decoySection) {
-                toggleDecoyBtn.addEventListener('click', function() {
-                    decoySection.classList.toggle('hidden');
-                    if (decoyBadge) decoyBadge.classList.toggle('hidden');
+            const sectionDecoy = document.getElementById('decoysection');
+            const sectionRecipients = document.getElementById('recipientssection');
+
+            function setProtectionMode(mode) {
+                if (btnStandard) btnStandard.classList.remove('active');
+                if (btnDecoy) btnDecoy.classList.remove('active');
+                if (btnRecipients) btnRecipients.classList.remove('active');
+
+                if (sectionDecoy) sectionDecoy.classList.add('hidden');
+                if (sectionRecipients) sectionRecipients.classList.add('hidden');
+
+                if (mode === 'standard') {
+                    if (btnStandard) btnStandard.classList.add('active');
+                } else if (mode === 'decoy') {
+                    if (btnDecoy) btnDecoy.classList.add('active');
+                    if (sectionDecoy) sectionDecoy.classList.remove('hidden');
+                } else if (mode === 'envelopes') {
+                    if (btnRecipients) btnRecipients.classList.add('active');
+                    if (sectionRecipients) sectionRecipients.classList.remove('hidden');
+                }
+            }
+
+            if (btnStandard) {
+                btnStandard.addEventListener('click', function () {
+                    setProtectionMode('standard');
                 });
             }
-            if (closeDecoyBtn && decoySection) {
-                closeDecoyBtn.addEventListener('click', function() {
-                    decoySection.classList.add('hidden');
-                    if (decoyBadge) decoyBadge.classList.add('hidden');
+            if (btnDecoy) {
+                btnDecoy.addEventListener('click', function () {
+                    setProtectionMode('decoy');
+                });
+            }
+            if (btnRecipients) {
+                btnRecipients.addEventListener('click', function () {
+                    setProtectionMode('envelopes');
                 });
             }
 

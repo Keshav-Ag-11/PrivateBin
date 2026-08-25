@@ -91,6 +91,46 @@ endif;
 			</div>
 		</div>
 
+		<!-- Email Timezone Confirm Modal -->
+		<div id="emailconfirmmodal" tabindex="-1" class="modal fade" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content sd-card border-cyan">
+					<div class="modal-body p-4 text-light">
+						<h5 class="modal-title mb-3 d-flex align-items-center gap-2">
+							<svg width="20" height="20" fill="currentColor"><use href="img/bootstrap-icons.svg#envelope" /></svg> <?php echo I18n::_('Send link via email') ?>
+						</h5>
+						<p class="text-secondary small mb-4"><?php echo I18n::_('Please select the timezone for the expiry date shown in the email:') ?></p>
+						<div class="d-flex gap-3">
+							<button id="emailconfirm-timezone-current" type="button" class="btn btn-outline-primary flex-fill">
+								<?php echo I18n::_('Local time') ?>
+							</button>
+							<button id="emailconfirm-timezone-utc" type="button" class="btn btn-outline-secondary flex-fill">
+								<?php echo I18n::_('UTC') ?>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- QR Code Modal -->
+		<div id="qrcodemodal" tabindex="-1" class="modal fade" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+				<div class="modal-content sd-card border-cyan">
+					<div class="modal-header border-secondary py-2 px-4">
+						<h6 class="modal-title d-flex align-items-center gap-2 m-0">
+							<svg width="16" height="16" fill="currentColor"><use href="img/bootstrap-icons.svg#qr-code" /></svg> <?php echo I18n::_('Scan QR code') ?>
+						</h6>
+						<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body p-4 d-flex flex-column align-items-center gap-3">
+						<div id="qrcode-display" class="p-2 bg-white rounded-3"></div>
+						<div class="small text-secondary text-center"><?php echo I18n::_('Scan to open this document on another device') ?></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Hidden elements required for PrivateBin JS Engine compatibility -->
 		<!-- Each element is wrapped individually so JS .parentElement calls don't unhide the entire block -->
 		<div id="loadingindicator" class="hidden"><span class="spinner-border spinner-border-sm"></span> <span>Loading...</span></div>
@@ -246,9 +286,6 @@ endif;
 					
 					<!-- Share Link Box -->
 					<div class="p-3 rounded-3 bg-dark border border-secondary mb-3 d-flex align-items-center gap-3">
-						<?php if ($QRCODE) : ?>
-						<div id="qrcodecanvas" class="p-2 bg-white rounded-3"></div>
-						<?php endif; ?>
 						<div class="flex-grow-1">
 							<div class="small text-muted font-monospace mb-1">
 								<svg width="14" height="14" fill="currentColor"><use href="img/bootstrap-icons.svg#qr-code" /></svg> SHARE LINK
@@ -267,6 +304,17 @@ endif;
 							<svg width="16" height="16" fill="currentColor"><use href="img/bootstrap-icons.svg#envelope" /></svg> <strong>Envelope Encryption Enabled:</strong> Each recipient has a unique link below.
 						</div>
 						<div id="recipientlinkcontainer" class="d-flex flex-column gap-2"></div>
+						<!-- Hidden template card for each recipient's individual link -->
+						<div id="recipientlinktemplate" class="hidden sd-card p-3 d-flex align-items-center gap-3" style="border:1px solid rgba(99,179,237,0.25);">
+							<svg width="20" height="20" fill="currentColor" class="text-cyan flex-shrink-0"><use href="img/bootstrap-icons.svg#person-circle" /></svg>
+							<div class="flex-grow-1 overflow-hidden">
+								<div class="small fw-bold text-cyan recipient-link-name mb-1">Recipient</div>
+								<input type="text" class="form-control form-control-sm font-monospace recipient-link-url bg-dark text-light border-secondary" readonly style="font-size:0.7rem;" />
+							</div>
+							<button class="btn btn-sm btn-outline-cyan recipient-link-copy flex-shrink-0" title="Copy link">
+								<svg width="14" height="14" fill="currentColor"><use href="img/bootstrap-icons.svg#copy" /></svg>
+							</button>
+						</div>
 					</div>
 				</div>
 
